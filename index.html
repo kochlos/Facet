@@ -233,8 +233,8 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 </main>
 </div>
 <!-- 3D Preview Modal -->
-<div id="modal3d" style="display:none;position:fixed;inset:0;background:rgba(5,5,8,0.97);z-index:10000;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 20px 16px;gap:12px;overflow:hidden">
-  <div style="display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;width:100%;max-width:960px;padding:0 20px">
+<div id="modal3d" style="display:none;position:fixed;inset:0;background:rgba(5,5,8,0.97);z-index:10000;flex-direction:column;align-items:stretch;gap:0;overflow:hidden">
+  <div style="display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;padding:14px 20px;border-bottom:1px solid #1a1a1a;flex-shrink:0;flex-wrap:wrap">
     <span style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--accent)">FACET · 3D</span>
     <span style="font-size:9px;color:#444;letter-spacing:2px;margin-left:8px">drag to rotate</span>
     <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
@@ -246,7 +246,7 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
       <button id="close3dBtn" style="background:transparent;border:1px solid #444;color:#888;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;padding:7px 14px;cursor:pointer">✕ Close</button>
     </div>
   </div>
-  <canvas id="canvas3d" style="border:1px solid #1a1a1a"></canvas>
+  <canvas id="canvas3d" style="display:block;border:none;flex:1;width:100%;cursor:grab"></canvas>
 </div>
 
 <script>
@@ -1173,7 +1173,7 @@ async function open3D() {
   }
 
   if (!R3) await init3D();
-  else refreshTex3D();
+  else { refreshTex3D(); buildMesh3D(); } // rebuild to pick up edits
   anim3D();
 }
 
@@ -1199,13 +1199,16 @@ function save3D() {
 
 function sizeCanvas3D() {
   const cv = $('canvas3d');
-  const headerH = 60; // header row + gap + padding
-  const vw = Math.min(window.innerWidth - 40, 960);
-  const vh = window.innerHeight - headerH - 56; // subtract header + bottom padding
+  // Canvas fills the modal minus the header (measured dynamically)
+  const modal = $('modal3d');
+  const header = modal.querySelector('div');
+  const headerH = header ? header.offsetHeight : 56;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight - headerH;
   cv.style.width  = vw + 'px';
-  cv.style.height = Math.max(200, vh) + 'px';
+  cv.style.height = vh + 'px';
   cv.width  = vw;
-  cv.height = Math.max(200, vh);
+  cv.height = Math.max(100, vh);
 }
 
 async function init3D() {
@@ -1257,9 +1260,9 @@ function buildMesh3D() {
   const pw = aspect >= 1 ? 4.5 : 4.5 * aspect;
   const ph = aspect >= 1 ? 4.5 / aspect : 4.5;
 
-  // Base mesh — use MeshStandardMaterial + normal map if available, else MeshBasicMaterial
-  const baseCanvas = genState && genState.baseCanvas && genState.baseCanvas.width
-    ? genState.baseCanvas : $('hiddenCanvas');
+  // Always use hiddenCanvas as base — it reflects all manual edits.
+  // baseCanvas is only used as fallback if hiddenCanvas is empty.
+  const baseCanvas = $('hiddenCanvas').width ? $('hiddenCanvas') : (genState && genState.baseCanvas) || $('hiddenCanvas');
   const baseTex = new THREE.CanvasTexture(baseCanvas);
   if (R3) baseTex.anisotropy = R3.capabilities.getMaxAnisotropy();
 
@@ -1328,9 +1331,7 @@ function applyRotation3D() {
 
 function refreshTex3D() {
   if (!M3) return;
-  const baseCanvas = genState && genState.baseCanvas && genState.baseCanvas.width
-    ? genState.baseCanvas : $('hiddenCanvas');
-  M3.material.map = new THREE.CanvasTexture(baseCanvas);
+  M3.material.map = new THREE.CanvasTexture($('hiddenCanvas'));
   M3.material.needsUpdate = true;
   if (M3stone && genState && genState.stoneLayerCanvas) {
     M3stone.material.map = new THREE.CanvasTexture(genState.stoneLayerCanvas);
