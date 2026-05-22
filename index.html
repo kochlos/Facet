@@ -34,9 +34,9 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 .btn:disabled{opacity:.25;cursor:not-allowed}
 .btn-s{background:transparent;color:var(--accent);border:1px solid var(--accent);font-size:14px}
 .btn-danger{border-color:#ff4747;color:#ff4747}
-.canvas-area{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);position:relative;overflow:hidden}
+.canvas-area{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);position:relative;overflow:auto}
 .cbg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.4}
-.cc{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:calc(100% - 48px);max-height:calc(100% - 48px)}
+.cc{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px}
 .placeholder{text-align:center;color:var(--muted);font-size:12px;letter-spacing:2px;z-index:1}
 .placeholder .big{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:6px;color:#1e1e1e;display:block;line-height:1;margin-bottom:12px}
 .progress-bar{width:100%;height:2px;background:var(--border);display:none}
@@ -183,7 +183,15 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
   <div style="display:flex;gap:6px">
     <button class="btn btn-s" id="clearSelBtn" style="font-size:11px;letter-spacing:1px;padding:8px">✕ Clear</button>
     <button class="btn btn-s btn-danger" id="deleteSelBtn" style="font-size:11px;letter-spacing:1px;padding:8px">⌫ Delete</button>
-    <button class="btn btn-s" id="fillModeBtn" style="font-size:11px;letter-spacing:1px;padding:8px" title="Flood fill: click tile to select all connected same-color tiles">🪣 Fill</button>
+    <button class="btn btn-s" id="fillModeBtn" style="font-size:11px;letter-spacing:1px;padding:8px" title="Flood fill">🪣 Fill</button>
+    <button class="btn btn-s" id="undoBtn" style="font-size:11px;letter-spacing:1px;padding:8px" title="Undo last action (Ctrl+Z)">↩ Undo</button>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <span style="font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Zoom</span>
+    <button class="btn btn-s" id="editorZoomOut" style="font-size:16px;width:30px;height:28px;padding:0;letter-spacing:0">−</button>
+    <button class="btn btn-s" id="editorZoomReset" style="font-size:9px;letter-spacing:1px;padding:0 8px;height:28px">1:1</button>
+    <button class="btn btn-s" id="editorZoomIn" style="font-size:16px;width:30px;height:28px;padding:0;letter-spacing:0">+</button>
+    <span id="editorZoomLabel" style="font-size:10px;color:var(--accent);letter-spacing:1px;min-width:36px">100%</span>
   </div>
   <div style="font-size:9px;color:var(--muted);letter-spacing:1px;line-height:1.6">
     Click · Shift+click · Drag rect · Del key<br>
@@ -203,11 +211,11 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
   <div class="cc">
     <div class="placeholder" id="placeholder"><span class="big">MOSAIC</span>load atlas + image to begin</div>
     <div class="progress-bar" id="progressBar"><div class="pbfill" id="progressFill"></div></div>
+    <div id="matrixBadge" style="display:none;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--accent);padding:4px 0 2px"></div>
+    <div id="hoverBadge" style="display:none;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:#666;padding:0 0 4px"></div>
     <div class="result-wrap" id="resultWrap">
       <img id="resultImg" alt="mosaic result">
       <canvas id="selectionCanvas"></canvas>
-      <div id="matrixBadge"></div>
-      <div id="hoverBadge"></div>
     </div>
   </div>
   <canvas id="hiddenCanvas"></canvas>
@@ -225,7 +233,7 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 </main>
 </div>
 <!-- 3D Preview Modal -->
-<div id="modal3d" style="display:none;position:fixed;inset:0;background:rgba(5,5,8,0.97);z-index:10000;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+<div id="modal3d" style="display:none;position:fixed;inset:0;background:rgba(5,5,8,0.97);z-index:10000;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 20px 16px;gap:12px;overflow:hidden">
   <div style="display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;width:100%;max-width:960px;padding:0 20px">
     <span style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--accent)">FACET · 3D</span>
     <span style="font-size:9px;color:#444;letter-spacing:2px;margin-left:8px">drag to rotate</span>
@@ -288,6 +296,7 @@ let atlasImg=null, atlas2Img=null, stoneImg=null, sourceImg=null;
 let paletteColors=[], paletteColors2=[], stonePalette=[];
 const vcache1=new Map(), vcache2=new Map();
 let tileGrid=null, genState=null;
+let undoSnapshot=null, undoTileGridSnap=null; // single-step undo
 let editMode=false, selectedTiles=new Set(), fillMode=false;
 let isDragging=false, dragStart=null, dragSnap=null;
 let stoneMode='scatter';
@@ -754,6 +763,7 @@ function showSwapPopup(x,y,oldKey){
 
 function replaceAll(oldKey,newKey){
   if(!genState||!tileGrid)return;
+  saveUndo();
   const{srcW,srcH,outCanvas,drawTile,tileSize}=genState;
   const ctx=outCanvas.getContext('2d');
   for(let py=0;py<srcH;py++) for(let px=0;px<srcW;px++){
@@ -801,7 +811,7 @@ sc.addEventListener('mousedown',e=>{
   const{tx,ty}=getTile(e);
   if(!inBounds(tx,ty))return;
   if(fillMode){
-    floodFillSelect(tx,ty);
+    floodFillSelect(tx,ty,e.shiftKey);
     return;
   }
   isDragging=true; dragStart={tx,ty}; dragSnap=new Set(selectedTiles);
@@ -861,8 +871,25 @@ function repaintSel(){
   }
 }
 
-$('clearSelBtn').addEventListener('click',()=>{selectedTiles.clear();updateSel();});
-$('deleteSelBtn').addEventListener('click',deleteSel);
+function saveUndo(){
+  if(!genState) return;
+  const ctx=genState.outCanvas.getContext('2d');
+  undoSnapshot=ctx.getImageData(0,0,genState.outW,genState.outH);
+  undoTileGridSnap=[...tileGrid];
+  $('undoBtn').style.opacity='1';
+}
+function applyUndo(){
+  if(!undoSnapshot||!genState) return;
+  const ctx=genState.outCanvas.getContext('2d');
+  ctx.putImageData(undoSnapshot,0,0);
+  tileGrid=[...undoTileGridSnap];
+  $('resultImg').src=genState.outCanvas.toDataURL('image/png');
+  undoSnapshot=null; undoTileGridSnap=null;
+  $('undoBtn').style.opacity='.4';
+  $('infoStatus').textContent='undone';
+}
+$('undoBtn').style.opacity='.4';
+$('undoBtn').addEventListener('click', applyUndo);
 
 $('fillModeBtn').addEventListener('click',()=>{
   fillMode=!fillMode;
@@ -873,41 +900,34 @@ $('fillModeBtn').addEventListener('click',()=>{
 });
 
 // ── Flood Fill (8-directional BFS) ───────────────────────────
-function floodFillSelect(startPx, startPy) {
+function floodFillSelect(startPx, startPy, addToSelection=false) {
   if (!genState) return;
   const { srcW, srcH } = genState;
-  const targetKey = tileGrid[startPy * srcW + startPx];
-  // targetKey can be null (empty tile) — fill empty areas too
+  const targetKey = tileGrid[startPy * srcW + startPx] ?? null;
   const visited = new Set();
   const queue = [[startPx, startPy]];
   const newSel = new Set();
-
   while (queue.length) {
     const [px, py] = queue.shift();
     const k = `${px},${py}`;
     if (visited.has(k)) continue;
     visited.add(k);
     const tileKey = tileGrid[py * srcW + px] ?? null;
-    if (tileKey !== targetKey) continue; // different base color — stop
-
+    if (tileKey !== targetKey) continue;
     newSel.add(k);
-
-    // 8-directional neighbours
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        if (dx === 0 && dy === 0) continue;
-        const nx = px + dx, ny = py + dy;
-        if (nx >= 0 && nx < srcW && ny >= 0 && ny < srcH)
-          queue.push([nx, ny]);
-      }
+    for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++){
+      if(dx===0&&dy===0) continue;
+      const nx=px+dx, ny=py+dy;
+      if(nx>=0&&nx<srcW&&ny>=0&&ny<srcH) queue.push([nx,ny]);
     }
   }
-
-  selectedTiles = newSel;
+  if (addToSelection) newSel.forEach(k => selectedTiles.add(k));
+  else selectedTiles = newSel;
   updateSel();
 }
 
 document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();applyUndo();return;}
   if(!editMode)return;
   if(e.key==='Escape'){selectedTiles.clear();updateSel();}
   if((e.key==='Delete'||e.key==='Backspace')&&!e.target.matches('input,textarea'))deleteSel();
@@ -915,6 +935,7 @@ document.addEventListener('keydown',e=>{
 
 function deleteSel(){
   if(!genState||!selectedTiles.size)return;
+  saveUndo();
   const ctx=genState.outCanvas.getContext('2d');
   for(const key of selectedTiles){
     const[px,py]=key.split(',').map(Number);
@@ -977,6 +998,7 @@ function buildAtlasGrid(){
 // Apply a stone tile ON TOP of existing base tile — does not clear first
 function applyStoneOverlay(tile){
   if(!genState||!selectedTiles.size)return;
+  saveUndo();
   const ctx=genState.outCanvas.getContext('2d');
   const{tileSize,srcW,stoneLayerCanvas}=genState;
   const sCtx=stoneLayerCanvas?stoneLayerCanvas.getContext('2d'):null;
@@ -994,6 +1016,7 @@ function applyStoneOverlay(tile){
 
 function applyTile(tile){
   if(!genState||!selectedTiles.size)return;
+  saveUndo();
   const ctx=genState.outCanvas.getContext('2d');
   const{tileSize,srcW}=genState;
   const tk=`${Math.round(tile.r)},${Math.round(tile.g)},${Math.round(tile.b)}`;
@@ -1176,10 +1199,13 @@ function save3D() {
 
 function sizeCanvas3D() {
   const cv = $('canvas3d');
+  const headerH = 60; // header row + gap + padding
   const vw = Math.min(window.innerWidth - 40, 960);
-  const vh = Math.min(window.innerHeight - 100, 640);
-  cv.style.width = vw + 'px'; cv.style.height = vh + 'px';
-  cv.width = vw; cv.height = vh;
+  const vh = window.innerHeight - headerH - 56; // subtract header + bottom padding
+  cv.style.width  = vw + 'px';
+  cv.style.height = Math.max(200, vh) + 'px';
+  cv.width  = vw;
+  cv.height = Math.max(200, vh);
 }
 
 async function init3D() {
@@ -1364,6 +1390,27 @@ window.addEventListener('resize', () => {
     C3.updateProjectionMatrix();
   }
 });
+
+// ── Editor zoom ───────────────────────────────────────────────
+let editorZoom=1;
+const ZOOM_LEVELS=[0.25,0.5,0.75,1,1.5,2,3,4];
+function setEditorZoom(z){
+  editorZoom=z;
+  const rw=$('resultWrap');
+  rw.style.transform=`scale(${editorZoom})`;
+  rw.style.transformOrigin='top center';
+  $('editorZoomLabel').textContent=Math.round(editorZoom*100)+'%';
+  setTimeout(repaintSel,50);
+}
+$('editorZoomIn').addEventListener('click',()=>{
+  const next=ZOOM_LEVELS.find(z=>z>editorZoom)||ZOOM_LEVELS[ZOOM_LEVELS.length-1];
+  setEditorZoom(next);
+});
+$('editorZoomOut').addEventListener('click',()=>{
+  const prev=[...ZOOM_LEVELS].reverse().find(z=>z<editorZoom)||ZOOM_LEVELS[0];
+  setEditorZoom(prev);
+});
+$('editorZoomReset').addEventListener('click',()=>setEditorZoom(1));
 
 $('debugBtn').addEventListener('click',()=>{
   const out=$('debugOut'); out.style.display='block';
