@@ -858,6 +858,47 @@ function buildAtlasGrid(){
     btn.addEventListener('click',()=>applyTile(tile));
     container.appendChild(btn);
   });
+
+  // Stones section — overlay mode (drawn on top, base tile preserved)
+  if(stonePalette.length>0 && stoneImg){
+    const div=document.createElement('div');
+    div.style.cssText='width:100%;height:1px;background:var(--border);margin:8px 0 6px';
+    container.appendChild(div);
+    const lbl=document.createElement('div');
+    lbl.style.cssText='width:100%;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px';
+    lbl.textContent='◈ stones overlay';
+    container.appendChild(lbl);
+    stonePalette.forEach(tile=>{
+      const cv=document.createElement('canvas'); cv.width=TILE_W; cv.height=TILE_H;
+      cv.getContext('2d').drawImage($('stoneCanvas'),tile.tx,tile.ty,TILE_W,TILE_H,0,0,TILE_W,TILE_H);
+      const btn=document.createElement('button');
+      btn.className='atlas-tile-btn';
+      btn.title=`Stone · rgb(${Math.round(tile.r)},${Math.round(tile.g)},${Math.round(tile.b)})`;
+      btn.style.backgroundImage=`url(${cv.toDataURL()})`;
+      btn.style.backgroundSize='cover';
+      btn.style.outline='1px dashed #555'; // dashed = overlay mode
+      btn.addEventListener('click',()=>applyStoneOverlay(tile));
+      container.appendChild(btn);
+    });
+  }
+}
+
+// Apply a stone tile ON TOP of existing base tile — does not clear first
+function applyStoneOverlay(tile){
+  if(!genState||!selectedTiles.size)return;
+  const ctx=genState.outCanvas.getContext('2d');
+  const{tileSize,srcW,stoneLayerCanvas}=genState;
+  const sCtx=stoneLayerCanvas?stoneLayerCanvas.getContext('2d'):null;
+  for(const key of selectedTiles){
+    const[px,py]=key.split(',').map(Number);
+    const dx=px*tileSize, dy=py*tileSize;
+    // Composite on top of base — no clearRect
+    ctx.drawImage($('stoneCanvas'),tile.tx,tile.ty,TILE_W,TILE_H,dx,dy,tileSize,tileSize);
+    // Keep stone layer canvas in sync for 3D
+    if(sCtx) sCtx.drawImage($('stoneCanvas'),tile.tx,tile.ty,TILE_W,TILE_H,dx,dy,tileSize,tileSize);
+  }
+  $('resultImg').src=genState.outCanvas.toDataURL('image/png');
+  $('infoStatus').textContent=`stone overlaid on ${selectedTiles.size} tiles`;
 }
 
 function applyTile(tile){
