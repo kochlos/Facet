@@ -233,8 +233,8 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 </main>
 </div>
 <!-- 3D Preview Modal -->
-<div id="modal3d" style="display:none;position:fixed;inset:0;background:rgba(5,5,8,0.97);z-index:10000;flex-direction:column;align-items:stretch;gap:0;overflow:hidden">
-  <div style="display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;padding:14px 20px;border-bottom:1px solid #1a1a1a;flex-shrink:0;flex-wrap:wrap">
+<div id="modal3d" style="display:none;position:fixed;inset:0;background:rgba(5,5,8,0.97);z-index:10000;grid-template-rows:auto 1fr;overflow:hidden">
+  <div style="display:flex;align-items:center;gap:10px;font-family:'Space Mono',monospace;padding:10px 16px;border-bottom:1px solid #1a1a1a;flex-wrap:wrap">
     <span style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--accent)">FACET · 3D</span>
     <span style="font-size:9px;color:#444;letter-spacing:2px;margin-left:8px">drag to rotate</span>
     <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
@@ -246,7 +246,7 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
       <button id="close3dBtn" style="background:transparent;border:1px solid #444;color:#888;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;padding:7px 14px;cursor:pointer">✕ Close</button>
     </div>
   </div>
-  <canvas id="canvas3d" style="display:block;border:none;flex:1;width:100%;cursor:grab"></canvas>
+  <canvas id="canvas3d" style="display:block;width:100%;height:100%;cursor:grab"></canvas>
 </div>
 
 <script>
@@ -1148,10 +1148,12 @@ $('lightToggleBtn').addEventListener('click', () => {
 
 async function open3D() {
   if (!$('hiddenCanvas').width) return;
-  $('modal3d').style.display = 'flex';
+  $('modal3d').style.display = 'grid';
   lightsOn = true;
   $('lightToggleBtn').textContent = '☀ Light ON';
   $('lightToggleBtn').style.color = '#aaa';
+  // Wait one frame so grid layout resolves before measuring canvas size
+  await new Promise(r => requestAnimationFrame(r));
   sizeCanvas3D();
 
   // Normal maps must be built from the RENDERED mosaic output so their scale
@@ -1199,16 +1201,12 @@ function save3D() {
 
 function sizeCanvas3D() {
   const cv = $('canvas3d');
-  // Canvas fills the modal minus the header (measured dynamically)
-  const modal = $('modal3d');
-  const header = modal.querySelector('div');
-  const headerH = header ? header.offsetHeight : 56;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight - headerH;
-  cv.style.width  = vw + 'px';
-  cv.style.height = vh + 'px';
-  cv.width  = vw;
-  cv.height = Math.max(100, vh);
+  // Canvas fills its grid cell — read actual rendered size
+  const rect = cv.getBoundingClientRect();
+  const w = Math.round(rect.width)  || window.innerWidth;
+  const h = Math.round(rect.height) || window.innerHeight - 56;
+  cv.width  = w;
+  cv.height = h;
 }
 
 async function init3D() {
