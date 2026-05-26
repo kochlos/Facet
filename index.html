@@ -10,10 +10,10 @@
 :root{--bg:#0a0a0a;--surface:#111;--border:#222;--accent:#e879f9;--text:#f0f0f0;--muted:#555;--panel:#141414}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;min-height:100vh;display:grid;grid-template-rows:auto 1fr;overflow-x:hidden}
-header{padding:24px 40px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:16px}
-header h1{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:var(--accent);line-height:1}
-header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
-.layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 89px)}
+header{padding:12px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;overflow:hidden;min-height:0}
+header h1{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:var(--accent);line-height:1;flex-shrink:0}
+header span{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+.layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 57px)}
 .sidebar{border-right:1px solid var(--border);padding:28px 24px;display:flex;flex-direction:column;gap:22px;overflow-y:auto}
 .slabel{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .upload-zone{border:1px dashed var(--border);background:var(--panel);padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
@@ -35,13 +35,24 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 .btn:disabled{opacity:.25;cursor:not-allowed}
 .btn-s{background:transparent;color:var(--accent);border:1px solid var(--accent);font-size:14px}
 .btn-danger{border-color:#ff4747;color:#ff4747}
-.canvas-area{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);position:relative;overflow:auto}
+.canvas-area{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);position:relative;overflow:auto;padding-top:20px;padding-left:20px}
 .cbg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.4}
 .cc{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px}
 .placeholder{text-align:center;color:var(--muted);font-size:12px;letter-spacing:2px;z-index:1}
 .placeholder .big{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:6px;color:#1e1e1e;display:block;line-height:1;margin-bottom:12px}
 .progress-bar{width:100%;height:2px;background:var(--border);display:none}
 .pbfill{height:100%;background:var(--accent);width:0%;transition:width .1s}
+/* ── Rulers ── */
+.ruler-corner{position:absolute;top:0;left:0;width:20px;height:20px;background:#0d0d0d;border-right:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;z-index:4;pointer-events:none}
+#rulerH{position:absolute;top:0;left:20px;right:0;height:20px;z-index:3;pointer-events:none}
+#rulerV{position:absolute;top:20px;left:0;bottom:0;width:20px;z-index:3;pointer-events:none}
+/* ── Collapsible ── */
+.collapse-btn{background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;padding:0;margin-left:4px;line-height:1;vertical-align:middle;transition:transform .2s}
+.collapse-btn.open{transform:rotate(180deg)}
+.collapsible-content{overflow:hidden;transition:max-height .25s ease,opacity .2s;opacity:1}
+.collapsible-content.collapsed{max-height:0!important;opacity:0;overflow:hidden!important}
+.upload-zone-replace{position:absolute;top:4px;right:4px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;z-index:10;padding:2px 4px;line-height:1}
+.upload-zone-replace:hover{color:var(--accent)}
 .result-wrap{display:none;position:relative;background-image:linear-gradient(45deg,#2a2a2a 25%,transparent 25%),linear-gradient(-45deg,#2a2a2a 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2a2a2a 75%),linear-gradient(-45deg,transparent 75%,#2a2a2a 75%);background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0;background-color:#1a1a1a;box-shadow:0 0 0 1px var(--border),0 20px 60px rgba(0,0,0,.7);max-width:100%;max-height:calc(100vh - 200px)}
 #resultImg{max-width:100%;max-height:calc(100vh - 200px);display:block;image-rendering:pixelated;cursor:crosshair}
 #selectionCanvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
@@ -56,8 +67,8 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 .cp-sw:hover{border-color:var(--accent);transform:scale(1.15)}
 .atlas-tile-btn{width:38px;height:38px;padding:0;border:2px solid transparent;background:transparent;cursor:pointer;image-rendering:pixelated;transition:border-color .1s,transform .1s;flex-shrink:0}
 .atlas-tile-btn:hover{border-color:var(--accent);transform:scale(1.1)}
-#matrixBadge{display:none;position:absolute;top:6px;left:6px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;background:rgba(0,0,0,.75);color:var(--accent);padding:4px 8px;pointer-events:none}
-#hoverBadge{display:none;position:absolute;top:6px;right:6px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;background:rgba(0,0,0,.75);color:#888;padding:4px 8px;pointer-events:none}
+#matrixBadge{display:none!important}
+#hoverBadge{display:none!important}
 #hiddenCanvas,#atlasCanvas,#atlas2Canvas,#stoneCanvas,#hiddenBaseCanvas,#hiddenStoneLayerCanvas{display:none}
 .btn3d-mode{background:transparent;border:1px solid #333;color:#666;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;padding:6px 12px;cursor:pointer;transition:all .15s}
 .btn3d-mode.active{border-color:var(--accent);color:var(--accent)}
@@ -68,15 +79,15 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 <header>
   <h1>Facet</h1><span>tile image generation</span><span id="headerMatrix" style="font-size:10px;color:var(--accent);letter-spacing:2px;margin-left:16px;display:none"></span>
   <!-- 3D controls — shown only when 3D modal is open -->
-  <div id="header3dControls" style="display:none;margin-left:auto;align-items:center;gap:6px;flex-wrap:wrap">
-    <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--accent)">3D</span>
-    <span style="font-size:9px;color:#444;letter-spacing:2px">drag to rotate</span>
-    <button id="zoom3dOut" style="background:transparent;border:1px solid #333;color:#aaa;font-family:'Space Mono',monospace;font-size:18px;width:34px;height:34px;cursor:pointer;line-height:1">−</button>
-    <button id="zoom3dIn"  style="background:transparent;border:1px solid #333;color:#aaa;font-family:'Space Mono',monospace;font-size:18px;width:34px;height:34px;cursor:pointer;line-height:1">+</button>
-    <button id="zoom3dReset" style="background:transparent;border:1px solid #333;color:#555;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:0 8px;height:34px;cursor:pointer">FIT</button>
-    <button id="lightToggleBtn" style="background:transparent;border:1px solid #333;color:#aaa;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:0 10px;height:34px;cursor:pointer">☀ Light ON</button>
-    <button id="save3dBtn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;padding:7px 14px;cursor:pointer">↓ Save PNG</button>
-    <button id="close3dBtn" style="background:transparent;border:1px solid #444;color:#888;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;padding:7px 14px;cursor:pointer">✕ Close</button>
+  <div id="header3dControls" style="display:none;margin-left:auto;align-items:center;gap:4px;flex-wrap:nowrap;flex-shrink:1;min-width:0">
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--accent);flex-shrink:0">3D</span>
+    <span style="font-size:8px;color:#444;letter-spacing:1px;flex-shrink:0">rotate</span>
+    <button id="zoom3dOut" style="background:transparent;border:1px solid #333;color:#aaa;font-family:'Space Mono',monospace;font-size:15px;width:26px;height:26px;cursor:pointer;line-height:1;flex-shrink:0;padding:0">−</button>
+    <button id="zoom3dIn"  style="background:transparent;border:1px solid #333;color:#aaa;font-family:'Space Mono',monospace;font-size:15px;width:26px;height:26px;cursor:pointer;line-height:1;flex-shrink:0;padding:0">+</button>
+    <button id="zoom3dReset" style="background:transparent;border:1px solid #333;color:#555;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0;padding:0 5px;height:26px;cursor:pointer;flex-shrink:0">FIT</button>
+    <button id="lightToggleBtn" style="background:transparent;border:1px solid #333;color:#aaa;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0;padding:0 6px;height:26px;cursor:pointer;flex-shrink:0;white-space:nowrap">☀ Light</button>
+    <button id="save3dBtn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;padding:0 8px;height:26px;cursor:pointer;flex-shrink:0">↓ PNG</button>
+    <button id="close3dBtn" style="background:transparent;border:1px solid #444;color:#888;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;padding:0 8px;height:26px;cursor:pointer;flex-shrink:0">✕</button>
   </div>
 </header>
 <div class="layout">
@@ -84,15 +95,25 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 
 <div>
   <div class="slabel">01 — Source Image</div>
-  <div class="upload-zone" id="sourceZone" style="min-height:90px;justify-content:center">
+  <div class="upload-zone" id="sourceZone" style="min-height:90px;justify-content:center;position:relative">
     <input type="file" id="sourceInput" accept="image/*">
-    <div class="uicon" style="font-size:32px">🖼</div>
-    <div class="ulabel" style="font-size:11px;letter-spacing:1.5px">Drop your image here<br><span style="color:#444">or click to browse</span></div>
+    <div id="sourceIdle" style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%">
+      <div class="uicon" style="font-size:32px;text-align:center">🖼</div>
+      <div class="ulabel" style="font-size:11px;letter-spacing:1.5px;text-align:center">Drop your image here<br><span style="color:#444">or click to browse</span></div>
+    </div>
     <div class="ustatus" id="sourceStatus"></div>
     <img class="uthumb" id="sourceThumb">
+    <button class="upload-zone-replace" id="sourceReplaceBtn" style="display:none" title="Replace image">✕</button>
   </div>
 </div>
 
+<!-- Blocks 02-04 collapsible -->
+<div>
+  <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">
+    <span class="slabel" style="margin-bottom:0;font-size:9px">02-04 — Atlases</span>
+    <button class="collapse-btn" id="atlasCollapseBtn" title="Expand/collapse atlases">▼</button>
+  </div>
+  <div id="atlasCollapseContent" class="collapsible-content collapsed" style="max-height:600px;display:flex;flex-direction:column;gap:8px">
 <!-- 01 + 02 side by side, compact -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
   <div>
@@ -130,6 +151,8 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
     <img class="uthumb" id="stoneThumb" style="max-height:36px;max-width:56px;flex-shrink:0">
   </div>
 </div>
+  </div><!-- end collapsible-content -->
+</div><!-- end blocks 02-04 -->
 
 
 <div class="divider"></div>
@@ -142,50 +165,41 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
     <canvas id="cropPreview" style="display:block;background:#111;max-width:100%;image-rendering:auto"></canvas>
   </div>
 
-  <!-- Spatial slider layout: Top / Left+Right / Bottom -->
-  <div style="display:flex;flex-direction:column;gap:5px">
-    <div class="prow">
-      <label style="text-align:center;display:block">Top — <span class="pval" style="font-size:13px" id="cropTV">0</span>px</label>
-      <input type="range" id="cropT" min="0" value="0" step="1">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-      <div class="prow">
-        <label>Left — <span class="pval" style="font-size:13px" id="cropLV">0</span>px</label>
-        <input type="range" id="cropL" min="0" value="0" step="1">
-      </div>
-      <div class="prow">
-        <label>Right — <span class="pval" style="font-size:13px" id="cropRV">0</span>px</label>
-        <input type="range" id="cropR" min="0" value="0" step="1">
-      </div>
-    </div>
-    <div class="prow">
-      <label style="text-align:center;display:block">Bottom — <span class="pval" style="font-size:13px" id="cropBV">0</span>px</label>
-      <input type="range" id="cropB" min="0" value="0" step="1">
-    </div>
+  <!-- Compact cross layout: arrows + number inputs only -->
+  <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+    <span style="font-size:13px;color:var(--muted);line-height:1">↑</span>
+    <input type="number" id="cropTN" min="0" value="0" style="width:42px;background:#111;border:1px solid #333;color:var(--accent);font-family:'Space Mono',monospace;font-size:11px;padding:2px 4px;text-align:center">
+    <span style="font-size:13px;color:var(--muted);line-height:1">↓</span>
+    <input type="number" id="cropBN" min="0" value="0" style="width:42px;background:#111;border:1px solid #333;color:var(--accent);font-family:'Space Mono',monospace;font-size:11px;padding:2px 4px;text-align:center">
+    <span style="font-size:13px;color:var(--muted);line-height:1;margin-left:2px">←</span>
+    <input type="number" id="cropLN" min="0" value="0" style="width:42px;background:#111;border:1px solid #333;color:var(--accent);font-family:'Space Mono',monospace;font-size:11px;padding:2px 4px;text-align:center">
+    <span style="font-size:13px;color:var(--muted);line-height:1">→</span>
+    <input type="number" id="cropRN" min="0" value="0" style="width:42px;background:#111;border:1px solid #333;color:var(--accent);font-family:'Space Mono',monospace;font-size:11px;padding:2px 4px;text-align:center">
+    <span style="font-size:9px;color:var(--muted)">px</span>
   </div>
-  <button class="btn btn-s" id="resetCropBtn" style="font-size:12px;margin-top:8px;letter-spacing:2px">↺ Reset crop</button>
+  <div style="display:flex;gap:6px;margin-top:8px">
+    <button class="btn btn-s" id="resetCropBtn" style="font-size:12px;letter-spacing:2px;flex:1">↺ Reset</button>
+  </div>
 </div>
 
 <div class="divider"></div>
 
 <div>
-  <div class="slabel">06 — Parameters</div>
-  <div class="prow" id="blendRow" style="opacity:.3;pointer-events:none;margin-bottom:14px">
-    <label>Secondary mix — <span class="pval" id="blendV">0</span>%</label>
-    <input type="range" id="blendPct" min="0" max="100" step="1" value="0">
-    <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px"><span>primary only</span><span>secondary only</span></div>
+  <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px">
+    <span class="slabel" style="margin-bottom:0">06 — Parameters</span>
+    <button class="collapse-btn open" id="params06CollapseBtn" title="Expand/collapse">▼</button>
   </div>
-  <div class="prow" id="stoneRow" style="opacity:.3;pointer-events:none">
-    <label>Stone overlay — <span class="pval" id="stoneV">0</span>%</label>
-    <input type="range" id="stonePct" min="0" max="100" step="1" value="0">
-    <div style="display:flex;gap:6px;margin-top:6px">
-      <button class="mode-btn active" data-mode="scatter">⠿ Scatter</button>
-      <button class="mode-btn" data-mode="region">⬛ Regions</button>
+  <div id="params06Content" class="collapsible-content" style="max-height:400px;overflow:visible;display:flex;flex-direction:column;gap:10px">
+    <div class="prow" id="blendRow" style="opacity:.3;pointer-events:none">
+      <label>Secondary mix — <span class="pval" id="blendV">0</span>%</label>
+      <input type="range" id="blendPct" min="0" max="100" step="1" value="0">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px"><span>primary only</span><span>secondary only</span></div>
     </div>
-    <div id="regScaleRow" style="display:none;margin-top:8px">
-      <div class="prow">
-        <label>Region size — <span class="pval" id="regScaleV">8</span> tiles</label>
-        <input type="range" id="regScale" min="2" max="32" step="1" value="8">
+    <div class="prow" id="stoneRow" style="opacity:.3;pointer-events:none">
+      <label>Stone overlay — <span class="pval" id="stoneV">0</span>%</label>
+      <input type="range" id="stonePct" min="0" max="100" step="1" value="0">
+      <div style="margin-top:6px">
+        <button class="mode-btn active" data-mode="scatter" style="width:auto;padding:6px 14px">⠿ Scatter</button>
       </div>
     </div>
   </div>
@@ -230,6 +244,9 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
 </aside>
 
 <main class="canvas-area">
+  <div class="ruler-corner"></div>
+  <canvas id="rulerH" height="20"></canvas>
+  <canvas id="rulerV" width="20"></canvas>
   <div class="cbg"></div>
   <div class="cc">
     <div class="placeholder" id="placeholder"><span class="big" style="font-size:40px;color:#222;letter-spacing:4px">↑</span>Load an image to begin</div>
@@ -247,16 +264,14 @@ header span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:
   <canvas id="stoneCanvas"></canvas>
   <canvas id="hiddenBaseCanvas"></canvas>
   <canvas id="hiddenStoneLayerCanvas"></canvas>
-  <div class="info-strip">
-    <div>TILES: <span id="infoTiles">—</span></div>
-    <div>OUTPUT: <span id="infoSize">—</span></div>
-    <div>GRID: <span id="infoGrid">—</span></div>
-    <div>STATUS: <span id="infoStatus">waiting</span></div>
-  </div>
+  <div id="infoStatus" style="display:none">waiting</div>
+  <div id="infoTiles" style="display:none"></div>
+  <div id="infoSize" style="display:none"></div>
+  <div id="infoGrid" style="display:none"></div>
 </main>
 </div>
 <!-- 3D Preview Modal — pure canvas, controls are in the main header -->
-<div id="modal3d" style="display:none;position:fixed;inset:0;top:89px;background:rgba(5,5,8,0.97);z-index:9000;overflow:hidden">
+<div id="modal3d" style="display:none;position:fixed;inset:0;top:57px;background:rgba(5,5,8,0.97);z-index:9000;overflow:hidden">
   <canvas id="canvas3d" style="position:absolute;inset:0;width:100%;height:100%;cursor:grab"></canvas>
 </div>
 
@@ -317,17 +332,16 @@ const COLOR_THR=30*30*3, STONE_THR=20*20*3;
 
 // ── Sliders ───────────────────────────────────────────────────
 const sliders=[
-  ['blendPct','blendV'],['stonePct','stoneV'],['regScale','regScaleV']
+  ['blendPct','blendV'],['stonePct','stoneV']
 ];
 sliders.forEach(([sid,vid])=> $(sid)&&$(sid).addEventListener('input',()=>$(vid).textContent=$(sid).value));
 
-// Stone mode buttons
+// Stone mode buttons (scatter only now)
 document.querySelectorAll('.mode-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     stoneMode=btn.dataset.mode;
-    $('regScaleRow').style.display=stoneMode==='region'?'block':'none';
   });
 });
 
@@ -365,6 +379,21 @@ setupUpload('atlas2Input','atlas2Zone','atlas2Thumb','atlas2Status',img=>{
 });
 setupUpload('sourceInput','sourceZone','sourceThumb','sourceStatus',img=>{
   sourceImg=img; initCrop(img);
+  $('sourceIdle').style.display='none';
+  $('sourceStatus').style.display='none';
+  $('sourceThumb').style.maxHeight='60px';
+  $('sourceReplaceBtn').style.display='block';
+  // Make file input invisible (replace button triggers it)
+  const input=$('sourceInput');
+  input.style.pointerEvents='none';
+  input.style.opacity='0';
+});
+// Replace button opens file picker
+$('sourceReplaceBtn').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  $('sourceInput').style.pointerEvents='auto';
+  $('sourceInput').click();
+  setTimeout(()=>$('sourceInput').style.pointerEvents='none',500);
 });
 setupUpload('stoneInput','stoneZone','stoneThumb','stoneStatus',img=>{
   stoneImg=img;
@@ -463,13 +492,13 @@ function extractPalette(img,canvasEl,outArr,mode){
 // ── Crop ──────────────────────────────────────────────────────
 function initCrop(img){
   $('cropSection').style.opacity='1'; $('cropSection').style.pointerEvents='auto';
-  ['cropL','cropR'].forEach(id=>{$(id).max=img.width-1; $(id).value=0;});
-  ['cropT','cropB'].forEach(id=>{$(id).max=img.height-1;$(id).value=0;});
-  ['cropLV','cropRV','cropTV','cropBV'].forEach(id=>$(id).textContent='0');
+  $('cropTN').max=$('cropBN').max=img.height-1;
+  $('cropLN').max=$('cropRN').max=img.width-1;
+  ['cropLN','cropRN','cropTN','cropBN'].forEach(id=>{$(id).value=0;});
   repaintCrop(); updateCropLabel();
 }
 function getCrop(){
-  const L=+$('cropL').value,T=+$('cropT').value,R=+$('cropR').value,B=+$('cropB').value;
+  const L=+($('cropLN').value||0),T=+($('cropTN').value||0),R=+($('cropRN').value||0),B=+($('cropBN').value||0);
   return{L,T,R,B,W:Math.max(1,sourceImg.width-L-R),H:Math.max(1,sourceImg.height-T-B)};
 }
 function updateCropLabel(){if(!sourceImg)return;const{W,H}=getCrop();$('cropDimLabel').textContent=`${W}×${H}px`;}
@@ -495,16 +524,23 @@ function repaintCrop(){
 }
 function clampCrop(){
   if(!sourceImg)return;
-  const L=+$('cropL').value,R=+$('cropR').value,T=+$('cropT').value,B=+$('cropB').value;
-  if(L+R>=sourceImg.width-1)  $('cropR').value=Math.max(0,sourceImg.width-1-L-1);
-  if(T+B>=sourceImg.height-1) $('cropB').value=Math.max(0,sourceImg.height-1-T-1);
-  $('cropLV').textContent=$('cropL').value;$('cropRV').textContent=$('cropR').value;
-  $('cropTV').textContent=$('cropT').value;$('cropBV').textContent=$('cropB').value;
+  let L=+($('cropLN').value||0),R=+($('cropRN').value||0),T=+($('cropTN').value||0),B=+($('cropBN').value||0);
+  if(L+R>=sourceImg.width-1)  {R=Math.max(0,sourceImg.width-1-L-1);  $('cropRN').value=R;}
+  if(T+B>=sourceImg.height-1) {B=Math.max(0,sourceImg.height-1-T-1); $('cropBN').value=B;}
 }
-['cropL','cropR','cropT','cropB'].forEach(id=>$(id).addEventListener('input',()=>{clampCrop();repaintCrop();updateCropLabel();}));
+['L','R','T','B'].forEach(dir=>{
+  const nid=`crop${dir}N`;
+  const nel=$(nid);
+  if(!nel)return;
+  nel.addEventListener('input',()=>{
+    let v=Math.max(0,Math.min(+nel.max||9999,+nel.value||0));
+    nel.value=v;
+    clampCrop(); repaintCrop(); updateCropLabel();
+  });
+});
 $('resetCropBtn').addEventListener('click',()=>{
   if(!sourceImg)return;
-  ['cropL','cropR','cropT','cropB'].forEach(id=>$(id).value=0);
+  ['cropLN','cropRN','cropTN','cropBN'].forEach(id=>{$(id).value=0;});
   clampCrop();repaintCrop();updateCropLabel();
 });
 
@@ -596,10 +632,11 @@ async function generate(){
   if(!atlasImg||!sourceImg||!paletteColors.length)return;
   const ts=64, sr=1; // tile size fixed at 64px, no downsampling
   normalMapCanvas = null; stoneNormalMapCanvas = null; // invalidate 3D cache
+  $('btn3d').disabled = true; // prevent 3D during generation (canvas is being redrawn)
   const bpct=+$('blendPct').value/100, spct=+$('stonePct').value/100;
   const useA2=atlas2Img&&paletteColors2.length>0&&bpct>0;
   const useSt=stoneImg&&stonePalette.length>0&&spct>0;
-  const rsc=+$('regScale').value, nThr=1-spct;
+  const rsc=8, nThr=1-spct;
 
   $('generateBtn').disabled=true;
   $('infoStatus').textContent='scanning…';
@@ -714,6 +751,7 @@ async function generate(){
     genState={srcW,srcH,tileSize:ts,outCanvas:oc,outW,outH,
               useA2,bpct,useSt,stoneMode,spct,rsc,nThr,sgrp,used,drawTile,
               baseCanvas: oBase, stoneLayerCanvas: useSt ? oStone : null};
+    setTimeout(()=>buildRulers(srcW,srcH),80);
   }
 }
 function tick(){return new Promise(r=>setTimeout(r,10));}
@@ -1012,25 +1050,43 @@ let normalMapCanvas=null, stoneNormalMapCanvas=null;
 function generateNormalMap(srcCanvas, strength) {
   const W = srcCanvas.width, H = srcCanvas.height;
   if (!W || !H) return null;
-  const src = srcCanvas.getContext('2d').getImageData(0, 0, W, H).data;
+
+  // Cap at 2048 px to prevent huge GPU textures (~163 MB each at 6400×6400)
+  // and avoid freezing the browser during the synchronous Sobel pass.
+  const MAX = 2048;
+  const scale = (W > MAX || H > MAX) ? MAX / Math.max(W, H) : 1;
+  const nw = Math.max(1, Math.round(W * scale));
+  const nh = Math.max(1, Math.round(H * scale));
+
+  let src;
+  try {
+    if (scale < 1) {
+      const tmp = document.createElement('canvas');
+      tmp.width = nw; tmp.height = nh;
+      tmp.getContext('2d').drawImage(srcCanvas, 0, 0, nw, nh);
+      src = tmp.getContext('2d').getImageData(0, 0, nw, nh).data;
+    } else {
+      src = srcCanvas.getContext('2d').getImageData(0, 0, W, H).data;
+    }
+  } catch(e) { return null; } // tainted canvas or other security error
 
   // Pre-compute luminance array for fast neighbour lookup
-  const lum = new Float32Array(W * H);
+  const lum = new Float32Array(nw * nh);
   for (let i = 0; i < src.length; i += 4) {
     lum[i >> 2] = (src[i] * 0.299 + src[i+1] * 0.587 + src[i+2] * 0.114) / 255;
   }
   function L(x, y) {
-    return lum[Math.max(0,Math.min(H-1,y)) * W + Math.max(0,Math.min(W-1,x))];
+    return lum[Math.max(0,Math.min(nh-1,y)) * nw + Math.max(0,Math.min(nw-1,x))];
   }
 
   const out = document.createElement('canvas');
-  out.width = W; out.height = H;
+  out.width = nw; out.height = nh;
   const octx = out.getContext('2d');
-  const nd = octx.createImageData(W, H);
+  const nd = octx.createImageData(nw, nh);
   const d = nd.data;
 
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
+  for (let y = 0; y < nh; y++) {
+    for (let x = 0; x < nw; x++) {
       // Sobel 3×3
       const gx = -L(x-1,y-1) + L(x+1,y-1)
                - 2*L(x-1,y)  + 2*L(x+1,y)
@@ -1044,7 +1100,7 @@ function generateNormalMap(srcCanvas, strength) {
       const nz = 1.0;
       const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
 
-      const i = (y * W + x) * 4;
+      const i = (y * nw + x) * 4;
       d[i]   = (nx/len * 0.5 + 0.5) * 255 | 0;
       d[i+1] = (ny/len * 0.5 + 0.5) * 255 | 0;
       d[i+2] = (nz/len) * 255 | 0;
@@ -1076,7 +1132,7 @@ $('zoom3dReset').addEventListener('click', () => setZoom(5.5));
 let lightsOn = true;
 $('lightToggleBtn').addEventListener('click', () => {
   lightsOn = !lightsOn;
-  $('lightToggleBtn').textContent = lightsOn ? '☀ Light ON' : '☾ Light OFF';
+  $('lightToggleBtn').textContent = lightsOn ? '☀ Light' : '☾ Light';
   $('lightToggleBtn').style.color = lightsOn ? '#aaa' : '#555';
 
   // Toggle lights visibility
@@ -1122,7 +1178,7 @@ async function open3D() {
   $('modal3d').style.display = 'block';
   $('header3dControls').style.display = 'flex';
   lightsOn = true;
-  $('lightToggleBtn').textContent = '☀ Light ON';
+  $('lightToggleBtn').textContent = '☀ Light';
   $('lightToggleBtn').style.color = '#aaa';
   // Wait two frames so the fixed-position layout fully resolves before measuring
   await new Promise(r => requestAnimationFrame(r));
@@ -1134,13 +1190,15 @@ async function open3D() {
     ? genState.baseCanvas : $('hiddenCanvas');
 
   if (!normalMapCanvas || normalMapCanvas._src !== baseForNormal) {
-    normalMapCanvas = generateNormalMap(baseForNormal, 0.8);
-    normalMapCanvas._src = baseForNormal;
+    const nm = generateNormalMap(baseForNormal, 0.8);
+    if (nm) { nm._src = baseForNormal; normalMapCanvas = nm; }
+    else normalMapCanvas = null;
   }
   if (genState && genState.stoneLayerCanvas && genState.stoneLayerCanvas.width) {
     if (!stoneNormalMapCanvas || stoneNormalMapCanvas._src !== genState.stoneLayerCanvas) {
-      stoneNormalMapCanvas = generateNormalMap(genState.stoneLayerCanvas, 1.0);
-      stoneNormalMapCanvas._src = genState.stoneLayerCanvas;
+      const snm = generateNormalMap(genState.stoneLayerCanvas, 1.0);
+      if (snm) { snm._src = genState.stoneLayerCanvas; stoneNormalMapCanvas = snm; }
+      else stoneNormalMapCanvas = null;
     }
   } else {
     stoneNormalMapCanvas = null;
@@ -1155,6 +1213,23 @@ function close3D() {
   $('modal3d').style.display = 'none';
   $('header3dControls').style.display = 'none';
   if (animId3) { cancelAnimationFrame(animId3); animId3 = null; }
+  // Free GPU textures immediately — they will be recreated on next open
+  if (M3) {
+    S3.remove(M3);
+    M3.geometry.dispose();
+    if (M3.material.map)       M3.material.map.dispose();
+    if (M3.material.normalMap) M3.material.normalMap.dispose();
+    M3.material.dispose();
+    M3 = null;
+  }
+  if (M3stone) {
+    S3.remove(M3stone);
+    M3stone.geometry.dispose();
+    if (M3stone.material.map)       M3stone.material.map.dispose();
+    if (M3stone.material.normalMap) M3stone.material.normalMap.dispose();
+    M3stone.material.dispose();
+    M3stone = null;
+  }
 }
 
 function save3D() {
@@ -1232,9 +1307,24 @@ function makeTex() {
 }
 
 function buildMesh3D() {
-  // Remove only mesh objects — preserve lights in scene
-  if (M3)      { S3.remove(M3);      M3.geometry.dispose();      M3.material.dispose();      M3=null; }
-  if (M3stone) { S3.remove(M3stone); M3stone.geometry.dispose(); M3stone.material.dispose(); M3stone=null; }
+  // Dispose old meshes — also dispose their GPU textures to prevent VRAM leaks
+  // (material.dispose() alone does NOT free textures in Three.js)
+  if (M3) {
+    S3.remove(M3);
+    M3.geometry.dispose();
+    if (M3.material.map)       M3.material.map.dispose();
+    if (M3.material.normalMap) M3.material.normalMap.dispose();
+    M3.material.dispose();
+    M3 = null;
+  }
+  if (M3stone) {
+    S3.remove(M3stone);
+    M3stone.geometry.dispose();
+    if (M3stone.material.map)       M3stone.material.map.dispose();
+    if (M3stone.material.normalMap) M3stone.material.normalMap.dispose();
+    M3stone.material.dispose();
+    M3stone = null;
+  }
 
   const mw = $('hiddenCanvas').width  || 1;
   const mh = $('hiddenCanvas').height || 1;
@@ -1242,9 +1332,12 @@ function buildMesh3D() {
   const pw = aspect >= 1 ? 4.5 : 4.5 * aspect;
   const ph = aspect >= 1 ? 4.5 / aspect : 4.5;
 
-  // Always use hiddenCanvas as base — it reflects all manual edits.
-  // baseCanvas is only used as fallback if hiddenCanvas is empty.
-  const baseCanvas = $('hiddenCanvas').width ? $('hiddenCanvas') : (genState && genState.baseCanvas) || $('hiddenCanvas');
+  // When stone overlay is active, use baseCanvas for the base mesh so stone tiles
+  // don't render twice (once baked in hiddenCanvas, once in the separate stone mesh).
+  const hasStone = genState && genState.stoneLayerCanvas && genState.stoneLayerCanvas.width;
+  const baseCanvas = hasStone
+    ? (genState.baseCanvas && genState.baseCanvas.width ? genState.baseCanvas : $('hiddenCanvas'))
+    : ($('hiddenCanvas').width ? $('hiddenCanvas') : (genState && genState.baseCanvas) || $('hiddenCanvas'));
   const baseTex = new THREE.CanvasTexture(baseCanvas);
   if (R3) baseTex.anisotropy = R3.capabilities.getMaxAnisotropy();
 
@@ -1287,7 +1380,7 @@ function buildMesh3D() {
       stoneMat = new THREE.MeshBasicMaterial({ map: stoneTex, transparent: true, alphaTest: 0.1, side: THREE.DoubleSide });
     }
     M3stone = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), stoneMat);
-    M3stone.userData.zOffset = Math.min(pw, ph) * 0.022;
+    M3stone.userData.zOffset = 0; // stones sit on base plane — depth comes from normal map
     S3.add(M3stone);
   }
   applyRotation3D();
@@ -1313,11 +1406,19 @@ function applyRotation3D() {
 
 function refreshTex3D() {
   if (!M3) return;
-  M3.material.map = new THREE.CanvasTexture($('hiddenCanvas'));
+  const hasStone = genState && genState.stoneLayerCanvas && genState.stoneLayerCanvas.width;
+  const baseCanvas = hasStone
+    ? (genState.baseCanvas && genState.baseCanvas.width ? genState.baseCanvas : $('hiddenCanvas'))
+    : $('hiddenCanvas');
+  const oldMap = M3.material.map;
+  M3.material.map = new THREE.CanvasTexture(baseCanvas);
   M3.material.needsUpdate = true;
+  if (oldMap) oldMap.dispose(); // free old GPU texture
   if (M3stone && genState && genState.stoneLayerCanvas) {
+    const oldSMap = M3stone.material.map;
     M3stone.material.map = new THREE.CanvasTexture(genState.stoneLayerCanvas);
     M3stone.material.needsUpdate = true;
+    if (oldSMap) oldSMap.dispose();
   }
 }
 
@@ -1380,6 +1481,8 @@ function setEditorZoom(z){
   rw.style.transformOrigin='top center';
   $('editorZoomLabel').textContent=Math.round(editorZoom*100)+'%';
   setTimeout(repaintSel,50);
+  // Rebuild rulers so ticks follow the zoomed image position
+  setTimeout(()=>{ if(genState)buildRulers(genState.srcW,genState.srcH); },60);
 }
 $('editorZoomIn').addEventListener('click',()=>{
   const next=ZOOM_LEVELS.find(z=>z>editorZoom)||ZOOM_LEVELS[ZOOM_LEVELS.length-1];
@@ -1410,6 +1513,152 @@ $('debugBtn').addEventListener('click',()=>{
   }else stonePalette.forEach((p,i)=>lines.push(`  [${i}] rgb(${Math.round(p.r)},${Math.round(p.g)},${Math.round(p.b)})`));
   out.textContent=lines.join('\n');
 });
+// ── Collapsibles ──────────────────────────────────────────────
+function setupCollapse(btnId, contentId, startOpen){
+  const btn=$(btnId), content=$(contentId);
+  if(!btn||!content)return;
+  const open=()=>{
+    content.classList.remove('collapsed');
+    content.style.overflow='hidden';
+    content.style.maxHeight='2000px'; // generous value — actual content ~150px, animation still smooth
+    btn.classList.add('open');
+    // After animation completes, lift constraints so child overflow (Scatter btn, dropdowns) can breathe
+    setTimeout(()=>{
+      if(!content.classList.contains('collapsed')){
+        content.style.overflow='visible';
+        content.style.maxHeight='none';
+      }
+    },300);
+  };
+  const close=()=>{
+    // Snapshot real height so CSS transition has a concrete start value
+    content.style.maxHeight=content.scrollHeight+'px';
+    content.style.overflow='hidden';
+    // Double-rAF: let browser paint the snapshot height, then animate to 0
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      content.style.maxHeight='0';
+      content.classList.add('collapsed');
+      btn.classList.remove('open');
+    }));
+  };
+  btn.addEventListener('click',()=>content.classList.contains('collapsed')?open():close());
+  if(startOpen)open(); else close();
+}
+setupCollapse('atlasCollapseBtn','atlasCollapseContent',false);
+setupCollapse('params06CollapseBtn','params06Content',true);
+
+// ── Rulers (canvas-based, pixel coordinates) ─────────────────
+function buildRulers(imgW, imgH){
+  const rh=$('rulerH'), rv=$('rulerV');
+  if(!rh||!rv||!imgW||!imgH)return;
+
+  const imgEl=$('resultImg');
+  const rect=imgEl.getBoundingClientRect();
+  const dispW=rect.width, dispH=rect.height;
+  if(!dispW||!dispH)return;
+
+  const mainArea=rh.parentElement;
+  const areaRect=mainArea.getBoundingClientRect();
+
+  // Physical ruler size in CSS px
+  const rulerW=Math.round(areaRect.width)-20;
+  const rulerHH=Math.round(areaRect.height)-20;
+  if(rulerW<1||rulerHH<1)return;
+
+  // ── DPR-aware canvas setup ────────────────────────────────────
+  // Multiply bitmap by devicePixelRatio so text/lines are crisp on Retina
+  const dpr=window.devicePixelRatio||1;
+
+  rh.width=Math.round(rulerW*dpr);   rh.height=Math.round(20*dpr);
+  rh.style.width=rulerW+'px';        rh.style.height='20px';
+
+  rv.width=Math.round(20*dpr);       rv.height=Math.round(rulerHH*dpr);
+  rv.style.width='20px';             rv.style.height=rulerHH+'px';
+
+  // Where does the image start relative to the ruler's origin?
+  // Both rects are viewport-relative, so scroll inside mainArea is already baked in.
+  const imgOffX=rect.left-(areaRect.left+20);
+  const imgOffY=rect.top -(areaRect.top +20);
+
+  const scaleX=dispW/imgW, scaleY=dispH/imgH;
+
+  // Tick interval: at least 24 CSS px apart
+  function niceStep(scale){
+    const candidates=[1,2,5,10,20,25,50,100,200,250,500,1000,2000,5000,10000];
+    for(const c of candidates){ if(c*scale>=24) return c; }
+    return candidates[candidates.length-1];
+  }
+  const stepX=niceStep(scaleX), stepY=niceStep(scaleY);
+
+  // ── Horizontal ruler ─────────────────────────────────────────
+  const hctx=rh.getContext('2d');
+  hctx.scale(dpr,dpr);                          // work in CSS px
+  hctx.fillStyle='#0d0d0d';
+  hctx.fillRect(0,0,rulerW,20);
+  hctx.strokeStyle='#2a2a2a'; hctx.lineWidth=1;
+  hctx.beginPath(); hctx.moveTo(0,19.5); hctx.lineTo(rulerW,19.5); hctx.stroke();
+  hctx.font='7px Space Mono,monospace';
+  hctx.fillStyle='#555'; hctx.textAlign='left'; hctx.textBaseline='top';
+
+  for(let px=0;px<=imgW;px+=stepX){
+    const sx=Math.round(imgOffX+px*scaleX)+0.5;
+    if(sx<0||sx>rulerW)continue;
+    const isMajor=(px%(stepX*5)===0)||px===0;
+    hctx.strokeStyle=isMajor?'#555':'#333';
+    hctx.beginPath();
+    hctx.moveTo(sx,isMajor?8:13); hctx.lineTo(sx,20);
+    hctx.stroke();
+    if(isMajor&&sx+2<rulerW){
+      hctx.fillStyle=px===0?'#666':'#555';
+      hctx.fillText(String(px),sx+2,2);
+    }
+  }
+
+  // ── Vertical ruler ───────────────────────────────────────────
+  const vctx=rv.getContext('2d');
+  vctx.scale(dpr,dpr);
+  vctx.fillStyle='#0d0d0d';
+  vctx.fillRect(0,0,20,rulerHH);
+  vctx.strokeStyle='#2a2a2a'; vctx.lineWidth=1;
+  vctx.beginPath(); vctx.moveTo(19.5,0); vctx.lineTo(19.5,rulerHH); vctx.stroke();
+  vctx.font='7px Space Mono,monospace';
+  vctx.textAlign='center'; vctx.textBaseline='middle';
+
+  for(let py=0;py<=imgH;py+=stepY){
+    const sy=Math.round(imgOffY+py*scaleY)+0.5;
+    if(sy<0||sy>rulerHH)continue;
+    const isMajor=(py%(stepY*5)===0)||py===0;
+    vctx.strokeStyle=isMajor?'#555':'#333';
+    vctx.beginPath();
+    vctx.moveTo(isMajor?8:13,sy); vctx.lineTo(20,sy);
+    vctx.stroke();
+    if(isMajor&&sy+6<rulerHH){
+      vctx.save();
+      vctx.translate(9,sy);
+      vctx.rotate(-Math.PI/2);
+      vctx.fillStyle=py===0?'#666':'#555';
+      vctx.fillText(String(py),0,0);
+      vctx.restore();
+    }
+  }
+}
+
+// ── Rebuild triggers ──────────────────────────────────────────
+$('resultImg').addEventListener('load',()=>{
+  // Two attempts: quick (layout may not be ready) + safe fallback
+  setTimeout(()=>{ if(genState)buildRulers(genState.srcW,genState.srcH); },80);
+  setTimeout(()=>{ if(genState)buildRulers(genState.srcW,genState.srcH); },300);
+});
+window.addEventListener('resize',()=>{
+  if(genState&&$('resultWrap').style.display!=='none')
+    buildRulers(genState.srcW,genState.srcH);
+});
+// Rebuild when canvas-area is scrolled (image moves, ticks must follow)
+$('rulerH').parentElement.addEventListener('scroll',()=>{
+  if(genState&&$('resultWrap').style.display!=='none')
+    buildRulers(genState.srcW,genState.srcH);
+});
+
 autoLoadDefaults();
 </script>
 </body>
